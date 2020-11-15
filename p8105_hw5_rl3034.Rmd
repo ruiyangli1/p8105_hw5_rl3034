@@ -32,9 +32,9 @@ scale_fill_discrete = scale_fill_viridis_d
 
 Read in the data.
 
-```{r}
+```{r homicide_df, collapse=TRUE, message=FALSE}
 homicide_df = 
-  read_csv("data/homicide-data.csv") %>% 
+  read_csv("homicide_data/homicide-data.csv") %>% 
   mutate(
     city_state = str_c(city, state, sep = "_"),
     resolved = case_when(
@@ -49,7 +49,7 @@ homicide_df =
 
 A quick look at homicides. 
 
-```{r}
+```{r aggregate_df, collapse=TRUE}
 aggregate_df = 
   homicide_df %>% 
   group_by(city_state) %>% 
@@ -61,7 +61,7 @@ aggregate_df =
 
 A prop test for Baltimore, MD. 
 
-```{r}
+```{r prop_test, collapse=TRUE}
 prop.test(
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved), 
   aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_total)) %>% 
@@ -70,7 +70,7 @@ prop.test(
 
 Iterate. 
 
-```{r}
+```{r results_df, collapse=TRUE}
 results_df = 
   aggregate_df %>% 
   mutate(
@@ -84,7 +84,7 @@ results_df =
 
 Plot the estimates and CIs for each city. 
 
-```{r}
+```{r plot, collapse=TRUE}
 results_df %>% 
   mutate(city_state = fct_reorder(city_state, estimate)) %>% 
   ggplot(aes(x = city_state, y = estimate)) +
@@ -94,4 +94,50 @@ results_df %>%
 ```
 
 
+
+## Problem 2 
+
+Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time. 
+
+```{r lda_df, collapse=TRUE, message=FALSE}
+lda_df = 
+  tibble(file = list.files("lda_data")) %>% 
+  mutate(
+    path = str_c("lda_data/", file),
+    data = map(.x = path, ~read_csv(.x))) %>% 
+  unnest(data) %>% 
+  select(-path) %>% 
+  mutate(file = str_remove(file, ".csv")) %>% 
+  separate(file, into = c("arm", "subj_id"), sep = "_") %>% 
+  pivot_longer(
+    week_1:week_8, 
+    names_to = "week", 
+    names_prefix = "week_", 
+    values_to = "observation"
+  ) %>% 
+  mutate(week = as.numeric(week)) %>% 
+  relocate(subj_id)
+
+head(lda_df)
+```
+
+Make a spaghetti plot showing observations on each subject over time. 
+
+```{r spaghetti_plot, collapse=TRUE}
+lda_df %>% 
+  group_by(subj_id, arm, week) %>% 
+  ggplot(aes(x = week, y = observation, group = subj_id, color = subj_id)) +
+  geom_point() + geom_path() +
+  facet_grid(~arm) +
+  labs(title = "Observations on each subject over time", 
+       x = "Week", 
+       y = "Observations", 
+       color = "Subject")
+```
+
+Comment on differences between groups: 
+
+* At week 1, mean observations across subjects in both groups look similar, but those in the control group have less variation than those in the experiment. 
+* Over time, the observations in the control group seem to be constant and do not vary much within both group level and individual level. The mean of the observations in the control group at each week is around 1. 
+* Over time, the observations in the experiment group seem to have an increasing trend within both group level and individual level. The mean of the observations in the experiment group starts at around 1 and gradually goes to around 5. 
 
