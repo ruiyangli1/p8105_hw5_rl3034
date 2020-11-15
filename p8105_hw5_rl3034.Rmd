@@ -251,7 +251,7 @@ plot_avg_rejected =
   summarise(avg = mean(estimate)) %>% 
   mutate(avg = round(avg, digits = 2)) %>% 
   ggplot(aes(y = avg, x = true_mean, color = true_mean)) +
-  geom_point(size = 2) + 
+  geom_point() + 
   geom_text(aes(label = avg), vjust = -0.5) + 
   theme(legend.position = "none") + 
   labs(
@@ -264,5 +264,5 @@ plot_avg_all + plot_avg_rejected
 ```
 
 * The sample average of μ estimates across tests for which the null is rejected is not approximately equal to the true value of μ when μ is close to 0 (e.g. 0, 1, 2, maybe 3), but it is approximately equal to the true μ when μ is more away from 0 (e.g. 5 and 6 in our case). 
-* This is because we reject the null hypothesis that the true μ is 0 if it is not likely that the estimated μ is different from 0 by chance only (i.e., the estimated μ is statistically significantly different from 0). So, when the true μ is close to 0, each sample for which the null hypothesis is rejected has its estimated μ different from 0, and as a result, the average estimate of μ is different from its true μ. However, when the true μ is much away from 0, we expect to see that each sample for which the null hypothesis is rejected has its estimated μ different from 0, and as a result, we do not expect to see the average estimate of μ is much different from its true μ.
+* This is because we reject the null hypothesis that the true μ is 0 if the estimated μ is statistically significantly different from 0. For those 5000 estimated μ's for each true μ value, we expect to see some above μ and some below μ. So, when the true μ is close to 0, let's say 1, we have some estimated μ below 1 and some above 1. Those above 1 are more likely to be rejected while those below 1 may be considered close to 0 and therefore are not likely to be rejected. As a result, the average estimated μ in the samples for which the null hypothesis is rejected is expected to be higher than 1 as we did not include those below 1 and close to 0. However, as we increase μ, no matter the estimated μ is above or below μ, it will almost always be rejected. Therefore, we do not expect to see the average estimate of μ is much different from its true μ for larger μ's.
 
